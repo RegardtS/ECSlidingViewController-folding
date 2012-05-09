@@ -24,6 +24,9 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
 @property (nonatomic, unsafe_unretained) BOOL underLeftShowing;
 @property (nonatomic, unsafe_unretained) BOOL underRightShowing;
 @property (nonatomic, unsafe_unretained) BOOL topViewIsOffScreen;
+@property (nonatomic, strong) UIView *foldingView;
+@property (nonatomic, strong) UIImageView *leftHalfImageView;
+@property (nonatomic, strong) UIImageView *rightHalfImageView;
 
 - (NSUInteger)autoResizeToFillScreen;
 - (UIView *)topView;
@@ -45,7 +48,7 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
 - (void)underRightWillAppear;
 - (void)topDidReset;
 - (BOOL)topViewHasFocus;
-- (void)updateUnderLeftLayout;
+- (void)updateUnderLeftLayout; 
 - (void)updateUnderRightLayout;
 
 @end
@@ -77,6 +80,7 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
 @synthesize underRightWidthLayout = _underRightWidthLayout;
 @synthesize underLeftWidthLayout  = _underLeftWidthLayout;
 @synthesize shouldAllowUserInteractionsWhenAnchored;
+@synthesize shouldRevealWithFoldingAnimation;
 @synthesize resetStrategy = _resetStrategy;
 
 // category properties
@@ -88,6 +92,11 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
 @synthesize underLeftShowing   = _underLeftShowing;
 @synthesize underRightShowing  = _underRightShowing;
 @synthesize topViewIsOffScreen = _topViewIsOffScreen;
+@synthesize foldingView;
+@synthesize leftHalfImageView;
+@synthesize rightHalfImageView;
+
+#define OVERLAY_TAG 42
 
 - (void)setTopViewController:(UIViewController *)theTopViewController
 {
@@ -179,6 +188,9 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
   self.topViewSnapshot = [[UIView alloc] initWithFrame:self.topView.bounds];
   [self.topViewSnapshot setAutoresizingMask:self.autoResizeToFillScreen];
   [self.topViewSnapshot addGestureRecognizer:self.resetTapGesture];
+    
+  // DEBUG ONLY
+  self.shouldRevealWithFoldingAnimation = YES;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -258,6 +270,38 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
     [self topViewHorizontalCenterWillChange:newCenterPosition];
     [self updateTopViewHorizontalCenter:newCenterPosition];
     [self topViewHorizontalCenterDidChange:newCenterPosition];
+    
+    // add the folding animation in if it's selected for this view
+    if (shouldRevealWithFoldingAnimation) {
+      float maxHalfWidth = self.view.frame.size.width/2;
+      float currentWidth = self.topView.frame.origin.x;
+      
+      CGFloat opposite = 0.5 * currentWidth;  
+      CGFloat hypoteneuse = maxHalfWidth;
+      CGFloat theta = acosf(opposite/hypoteneuse);
+      CGFloat leftAngle = -theta;
+      CGFloat rightAngle = theta;
+      
+      // resize the width of the folding view to the currently visible area
+      CGRect frame = self.foldingView.frame;
+      frame.size.width = currentWidth;
+      self.foldingView.frame = frame;
+      
+      NSLog(@"Current width: %f", currentWidth);
+      
+      CATransform3D transform = CATransform3DIdentity;
+      self.leftHalfImageView.layer.transform = CATransform3DRotate(transform, leftAngle, 0.0, 1.0, 0.0);
+      self.rightHalfImageView.layer.transform = CATransform3DRotate(transform, rightAngle, 0.0, 1.0, 0.0);
+      
+      self.leftHalfImageView.layer.position = CGPointMake(0, self.underLeftView.frame.size.height/2);
+      self.rightHalfImageView.layer.position = CGPointMake(currentWidth, self.underLeftView.frame.size.height/2);
+      
+      // set the alpha for the overlays
+      float ratio = 1 - opposite / hypoteneuse; // range: 0-1
+      [[self.leftHalfImageView viewWithTag:OVERLAY_TAG] setAlpha:ratio*0.5];
+      [[self.rightHalfImageView viewWithTag:OVERLAY_TAG] setAlpha:ratio*0.25];
+      
+    }  
   } else if (recognizer.state == UIGestureRecognizerStateEnded || recognizer.state == UIGestureRecognizerStateCancelled) {
     CGPoint currentVelocityPoint = [recognizer velocityInView:self.view];
     CGFloat currentVelocityX     = currentVelocityPoint.x;
@@ -497,6 +541,60 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
   [self updateUnderLeftLayout];
   _underLeftShowing  = YES;
   _underRightShowing = NO;
+  
+  if (shouldRevealWithFoldingAnimation) {
+    
+    if (self.foldingView) {
+      [self.foldingView removeFromSuperview];
+    }
+
+    // take a snapshot of the underleft view controller, copy it into two image views,
+    // one for the left half and one for the right
+    UIImage *underLeftImage = [UIImage imageWithUIView:self.underLeftView];
+    self.leftHalfImageView = [[UIImageView alloc] initWithImage:underLeftImage];
+    self.rightHalfImageView = [[UIImageView alloc] initWithImage:underLeftImage];
+    
+    // create a UIView to hold both halves
+    self.foldingView = [[UIView alloc] initWithFrame:self.underLeftView.frame];
+    self.foldingView.backgroundColor = [UIColor blackColor];
+    [self.underLeftView addSubview:self.foldingView];
+
+    // add perspective to all sublayers
+    CATransform3D sublayerTransform = CATransform3DIdentity;
+    sublayerTransform.m34 = 1./1000;
+    self.foldingView.layer.sublayerTransform = sublayerTransform;
+    
+    // we add one layer for the left half and one for the right
+    self.leftHalfImageView.layer.anchorPoint = CGPointMake(0, .5);
+    [self.foldingView addSubview:self.leftHalfImageView];
+    
+    self.rightHalfImageView.layer.anchorPoint = CGPointMake(1, .5);
+    [self.foldingView addSubview:self.rightHalfImageView];
+    
+    CGRect frame = self.leftHalfImageView.frame;
+    frame.size.width /= 2;
+    self.leftHalfImageView.frame = frame;
+    self.rightHalfImageView.frame = frame;
+    
+    self.leftHalfImageView.contentMode = UIViewContentModeLeft;
+    self.leftHalfImageView.clipsToBounds = YES;
+    self.rightHalfImageView.contentMode = UIViewContentModeRight;
+    self.rightHalfImageView.clipsToBounds = YES;
+    
+    // add overlays whose opacity we will adjust depending on the angle
+    CGRect viewFrame = CGRectMake(0, 0, self.leftHalfImageView.frame.size.width, self.leftHalfImageView.frame.size.height);
+    
+    UIView *view = [[UIView alloc] initWithFrame:viewFrame];
+    view.tag = OVERLAY_TAG;
+    view.backgroundColor = [UIColor blackColor];
+    [self.leftHalfImageView addSubview:view];
+    
+    view = [[UIView alloc] initWithFrame:viewFrame];
+    view.tag = OVERLAY_TAG;
+    view.backgroundColor = [UIColor blackColor];
+    [self.rightHalfImageView addSubview:view];
+
+  }
 }
 
 - (void)underRightWillAppear

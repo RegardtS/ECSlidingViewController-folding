@@ -114,6 +114,12 @@ typedef enum {
  */
 @property (nonatomic, unsafe_unretained) BOOL shouldAllowUserInteractionsWhenAnchored;
 
+/** Specifies if the under view controllers should use a folding animation
+ 
+ By default, this is set to NO
+ */
+@property (nonatomic, unsafe_unretained) BOOL shouldRevealWithFoldingAnimation;
+
 /** Specifies the behavior for the under left width
  
  By default, this is set to ECFullWidth
