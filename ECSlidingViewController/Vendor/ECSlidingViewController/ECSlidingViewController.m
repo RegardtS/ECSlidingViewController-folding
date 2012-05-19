@@ -270,9 +270,9 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
       }
       self.foldingView = [[MMFoldingView alloc] initWithView:self.underLeftView];
       // anchor to the left side of the screen
-      self.foldingView.layer.anchorPoint = CGPointMake(0, .5);
-      self.foldingView.center = CGPointMake(0, self.view.frame.size.height/2);
-      [self.view addSubview:foldingView];
+      //self.foldingView.layer.anchorPoint = CGPointMake(.5, .5);
+      self.foldingView.frame = self.underLeftView.frame;
+      [self.underLeftView addSubview:self.foldingView];
     }
     
   } else if (recognizer.state == UIGestureRecognizerStateChanged) {
@@ -290,9 +290,9 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
     // add the folding animation in if it's selected for this view
     if (shouldRevealWithFoldingAnimation) {
       float currentWidth = self.topView.frame.origin.x;
-      CGRect frame = self.foldingView.bounds;
+      CGRect frame = self.foldingView.frame;
       frame.size.width = currentWidth;
-      self.foldingView.bounds = frame;
+      self.foldingView.frame = frame;
       
       NSLog(@"<bounds x:%f y:%f w:%f h:%f> <center x:%f y:%f> <anchor x:%f y:%f>",
             foldingView.bounds.origin.x,
@@ -342,7 +342,7 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
   
   [self topViewHorizontalCenterWillChange:newCenter];
   
-  [UIView animateWithDuration:0.25f animations:^{
+  [UIView animateWithDuration:.25f animations:^{
     if (animations) {
       animations();
     }
@@ -350,12 +350,11 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
     
     // reveal with animation!
     if (shouldRevealWithFoldingAnimation) {
-      [self.foldingView enableBoundsAnimationWithDuration:.25];
+      [self.foldingView enableBoundsAnimationWithDuration:.25f];
       
-      CGRect frame = self.foldingView.layer.bounds;
+      CGRect frame = self.foldingView.layer.frame;
       frame.size.width = self.view.frame.size.width;
-      self.foldingView.layer.bounds = frame;
-
+      self.foldingView.layer.frame = frame;
     }
   } completion:^(BOOL finished){
     if (_resetStrategy & ECPanning) {
@@ -365,6 +364,7 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
     }
     if (complete) {
       complete();
+      [self.foldingView disableBoundsAnimation];
     }
     _topViewIsOffScreen = NO;
     [self addTopViewSnapshot];
@@ -425,13 +425,13 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
   [self topViewHorizontalCenterWillChange:self.resettedCenter];
   
   // hide with animation!
-  [UIView animateWithDuration:0.25f animations:^{
+  [UIView animateWithDuration:.25f animations:^{
     if (shouldRevealWithFoldingAnimation) {
       [self.foldingView enableBoundsAnimationWithDuration:.25];
       
-      CGRect frame = self.foldingView.bounds;
-      frame.size.width = 0.;
-      self.foldingView.bounds = frame;
+      CGRect frame = self.foldingView.frame;
+      frame.size.width = 0.1;
+      self.foldingView.frame = frame;
     }
     if (animations) {
       animations();
@@ -442,6 +442,7 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
   } completion:^(BOOL finished) {
     if (complete) {
       complete();
+      [self.foldingView disableBoundsAnimation];
     }
     [self topViewHorizontalCenterDidChange:self.resettedCenter];
   }];
@@ -578,9 +579,9 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
     }
     self.foldingView = [[MMFoldingView alloc] initWithView:self.underLeftView];
     // anchor to the left side of the screen
-    self.foldingView.layer.anchorPoint = CGPointMake(0, .5);
-    self.foldingView.center = CGPointMake(0, self.view.frame.size.height/2);
-    [self.view addSubview:foldingView];
+    //self.foldingView.layer.anchorPoint = CGPointMake(.5, .5);
+    self.foldingView.frame = self.underLeftView.frame;
+    [self.underLeftView addSubview:foldingView];
   }
 }
 
