@@ -3,7 +3,7 @@
 //  ECSlidingViewController
 //
 //  Created by Michael Manesh on 5/15/12.
-//  Copyright (c) 2012 Booz Allen Hamilton. All rights reserved.
+//  Copyright (c) 2012
 //
 
 #import <UIKit/UIKit.h>

@@ -3,7 +3,7 @@
 //  ECSlidingViewController
 //
 //  Created by Michael Manesh on 5/15/12.
-//  Copyright (c) 2012 Booz Allen Hamilton. All rights reserved.
+//  Copyright (c) 2012
 //
 
 #import "MMFoldingView.h"
@@ -32,6 +32,9 @@
 @property (nonatomic, retain) CALayer *rightHalfLayer;
 @property (nonatomic, retain) MMSublayerDelegate *sublayerDelegate;
 
+@property (nonatomic, retain) CALayer *leftHalfShadowLayer;
+@property (nonatomic, retain) CALayer *rightHalfShadowLayer;
+
 @property float fullWidth;
 @property (readonly) float halfWidth;
 @property float animationDuration;
@@ -47,6 +50,8 @@
 @synthesize animationDuration;
 @synthesize isAnimating;
 @synthesize sublayerDelegate;
+@synthesize leftHalfShadowLayer;
+@synthesize rightHalfShadowLayer;
 
 - (float) halfWidth {
     return fullWidth/2;
@@ -92,6 +97,8 @@
         self.rightHalfLayer.masksToBounds = YES;
         self.leftHalfLayer.contentsGravity = kCAGravityLeft;
         self.rightHalfLayer.contentsGravity = kCAGravityRight;
+        self.leftHalfLayer.contentsScale = [[UIScreen mainScreen] scale];
+        self.rightHalfLayer.contentsScale = [[UIScreen mainScreen] scale];
 
         // setup the delegates and a delegate redirector
         self.sublayerDelegate = [[MMSublayerDelegate alloc] init];
@@ -99,40 +106,23 @@
         self.leftHalfLayer.delegate = sublayerDelegate;
         self.rightHalfLayer.delegate = sublayerDelegate;
         
-        /*
-        CGRect frame = self.leftHalfImageView.frame;
-        frame.size.width /= 2;
-        self.leftHalfImageView.frame = frame;
-        self.rightHalfImageView.frame = frame;
-        
-        self.leftHalfImageView.contentMode = UIViewContentModeLeft;
-        self.leftHalfImageView.clipsToBounds = YES;
-        self.rightHalfImageView.contentMode = UIViewContentModeRight;
-        self.rightHalfImageView.clipsToBounds = YES;
-         
-         */
-        
         // TODO: add insets for beauty (anti-aliased edges)
         
         // add overlays whose opacity we will adjust depending on the angle
         //CGRect viewFrame = CGRectMake(0, 0, self.leftHalfLayer.frame.size.width, self.leftHalfLayer.frame.size.height);
         
-        /*
-        UIView *overlayView = [[UIView alloc] initWithFrame:viewFrame];
-        overlayView.tag = OVERLAY_TAG;
-        overlayView.backgroundColor = [UIColor blackColor];
-        [self.leftHalfLayer addSubview:overlayView];
-        
-        overlayView = [[UIView alloc] initWithFrame:viewFrame];
-        overlayView.tag = OVERLAY_TAG;
-        overlayView.backgroundColor = [UIColor blackColor];
-        [self.rightHalfImageView addSubview:overlayView];
-         
-         */
-        
-        // set the delegates for all layers to self so we can control the animations
-
-
+      // add shadow overlays
+      self.leftHalfShadowLayer = [CALayer layer];
+      self.leftHalfShadowLayer.backgroundColor = [[UIColor blackColor] CGColor];
+      self.leftHalfShadowLayer.frame = self.leftHalfLayer.frame;
+      self.leftHalfShadowLayer.delegate = sublayerDelegate;
+      [self.leftHalfLayer addSublayer:leftHalfShadowLayer];
+      
+      self.rightHalfShadowLayer = [CALayer layer];
+      self.rightHalfShadowLayer.backgroundColor = [[UIColor blackColor] CGColor];
+      self.rightHalfShadowLayer.frame = self.rightHalfLayer.frame;
+      self.rightHalfShadowLayer.delegate = sublayerDelegate;
+      [self.rightHalfLayer addSublayer:rightHalfShadowLayer];
     }
     return self;
 }
@@ -152,7 +142,7 @@
     CATransform3D leftTransform = CATransform3DIdentity;
     
     // increase the width of the right side to the nearest full pixel to ensure no gap ever appears between the two sides
-    CATransform3D rightTransform = CATransform3DMakeScale((halfCurrentWidth+0.5)/halfCurrentWidth, 1, 1);
+    CATransform3D rightTransform = CATransform3DMakeScale((halfCurrentWidth+0.75)/halfCurrentWidth, 1, 1);
     //CATransform3D rightTransform = CATransform3DIdentity;
     
     self.leftHalfLayer.transform = CATransform3DRotate(leftTransform, leftAngle, 0.0, 1.0, 0.0);
@@ -167,12 +157,10 @@
     self.leftHalfLayer.position = CGPointMake(0, self.frame.size.height/2);
     self.rightHalfLayer.position = CGPointMake(currentWidth, self.frame.size.height/2);
     
-    // set the alpha for the overlays   
-    /*
+    // set the alpha for the overlays
     float ratio = 1 - opposite / hypoteneuse; // range: 0-1
-    [[self.leftHalfImageView viewWithTag:OVERLAY_TAG] setAlpha:ratio*0.8];
-    [[self.rightHalfImageView viewWithTag:OVERLAY_TAG] setAlpha:ratio*0.5];
-     */
+    self.rightHalfShadowLayer.opacity = ratio * 0.9f;
+    self.leftHalfShadowLayer.opacity = ratio * 0.7f;
 }
 
 
