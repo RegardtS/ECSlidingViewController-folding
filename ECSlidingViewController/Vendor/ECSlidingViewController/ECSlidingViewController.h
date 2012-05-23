@@ -118,7 +118,8 @@ typedef enum {
  
  By default, this is set to NO
  */
-@property (nonatomic, unsafe_unretained) BOOL shouldRevealWithFoldingAnimation;
+@property (nonatomic, unsafe_unretained) BOOL shouldRevealWithFoldingAnimationLeft;
+@property (nonatomic, unsafe_unretained) BOOL shouldRevealWithFoldingAnimationRight;
 
 /** Specifies the behavior for the under left width
  

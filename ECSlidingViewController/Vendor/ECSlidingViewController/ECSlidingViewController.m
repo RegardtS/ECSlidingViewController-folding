@@ -53,6 +53,12 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
 - (void)updateUnderLeftLayout; 
 - (void)updateUnderRightLayout;
 
+// for MMFoldingView
+- (void)initializeFoldingViewForSide:(ECSide)side; // take a screenshot of the view controller underneath and add it to the under view
+- (void)stepFoldingView; // instantly set the folding view to match the current position of the top view
+- (void)animateFoldingViewToFullSize; // temporarily enable layer animations, expand the folding view to max width and remove frmo superview
+- (void)animateFoldingViewToShrink; // temporarily enable layer animations, shrink the folding view to size 0 then remove from superview
+
 @end
 
 @implementation UIViewController(SlidingViewExtension)
@@ -82,7 +88,8 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
 @synthesize underRightWidthLayout = _underRightWidthLayout;
 @synthesize underLeftWidthLayout  = _underLeftWidthLayout;
 @synthesize shouldAllowUserInteractionsWhenAnchored;
-@synthesize shouldRevealWithFoldingAnimation;
+@synthesize shouldRevealWithFoldingAnimationLeft;
+@synthesize shouldRevealWithFoldingAnimationRight;
 @synthesize resetStrategy = _resetStrategy;
 
 // category properties
@@ -192,7 +199,8 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
   [self.topViewSnapshot addGestureRecognizer:self.resetTapGesture];
     
   // DEBUG ONLY
-  self.shouldRevealWithFoldingAnimation = YES;
+  self.shouldRevealWithFoldingAnimationLeft = YES;
+  self.shouldRevealWithFoldingAnimationRight = YES;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -263,17 +271,10 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
     self.initialHoizontalCenter = self.topView.center.x;
     
     // if we're just beginning, regenerate the folding view with the most revent view's state
-    if (shouldRevealWithFoldingAnimation) {
-      if (self.foldingView) {
-        [self.foldingView removeFromSuperview];
-        self.foldingView = nil;
-      }
-      self.foldingView = [[MMFoldingView alloc] initWithView:self.underLeftView];
-      // anchor to the left side of the screen
-      //self.foldingView.layer.anchorPoint = CGPointMake(.5, .5);
-      self.foldingView.frame = self.underLeftView.frame;
-      [self.underLeftView addSubview:self.foldingView];
-    }
+    if (shouldRevealWithFoldingAnimationLeft)
+      [self initializeFoldingViewForSide:ECLeft];
+    if (shouldRevealWithFoldingAnimationRight)
+      [self initializeFoldingViewForSide:ECRight];
     
   } else if (recognizer.state == UIGestureRecognizerStateChanged) {
     CGFloat panAmount = self.initialTouchPositionX - currentTouchPositionX;
@@ -287,25 +288,10 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
     [self updateTopViewHorizontalCenter:newCenterPosition];
     [self topViewHorizontalCenterDidChange:newCenterPosition];
     
-    // add the folding animation in if it's selected for this view
-    if (shouldRevealWithFoldingAnimation) {
-      float currentWidth = self.topView.frame.origin.x;
-      CGRect frame = self.foldingView.frame;
-      frame.size.width = currentWidth;
-      self.foldingView.frame = frame;
-      
-      NSLog(@"<bounds x:%f y:%f w:%f h:%f> <center x:%f y:%f> <anchor x:%f y:%f>",
-            foldingView.bounds.origin.x,
-            foldingView.bounds.origin.y,
-            foldingView.bounds.size.width,
-            foldingView.bounds.size.height,
-            foldingView.center.x,
-            foldingView.center.y,
-            foldingView.layer.anchorPoint.x,
-            foldingView.layer.anchorPoint.y
-            );
+    // step the folding animation whenever the gesture recognizer moves
+    if (shouldRevealWithFoldingAnimationLeft || shouldRevealWithFoldingAnimationRight)
+      [self stepFoldingView];
 
-    }  
   } else if (recognizer.state == UIGestureRecognizerStateEnded || recognizer.state == UIGestureRecognizerStateCancelled) {
     CGPoint currentVelocityPoint = [recognizer velocityInView:self.view];
     CGFloat currentVelocityX     = currentVelocityPoint.x;
@@ -348,13 +334,9 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
     }
     [self updateTopViewHorizontalCenter:newCenter];
     
-    // reveal with animation!
-    if (shouldRevealWithFoldingAnimation) {
-      [self.foldingView enableBoundsAnimationWithDuration:.25f];
-      
-      CGRect frame = self.foldingView.layer.frame;
-      frame.size.width = self.view.frame.size.width;
-      self.foldingView.layer.frame = frame;
+    // reveal the folding view with animation
+    if (shouldRevealWithFoldingAnimationLeft || shouldRevealWithFoldingAnimationRight) {
+      [self animateFoldingViewToFullSize];
     }
   } completion:^(BOOL finished){
     if (_resetStrategy & ECPanning) {
@@ -364,12 +346,13 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
     }
     if (complete) {
       complete();
-      [self.foldingView disableBoundsAnimation];
     }
     _topViewIsOffScreen = NO;
     [self addTopViewSnapshot];
     
-    if (shouldRevealWithFoldingAnimation) {
+    // hide the folding view after animation finished so the user can select the view underneath
+    if (shouldRevealWithFoldingAnimationLeft || shouldRevealWithFoldingAnimationRight) {
+      [self.foldingView disableBoundsAnimation];
       self.foldingView.hidden = YES;
     }
     
@@ -426,12 +409,8 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
   
   // hide with animation!
   [UIView animateWithDuration:.25f animations:^{
-    if (shouldRevealWithFoldingAnimation) {
-      [self.foldingView enableBoundsAnimationWithDuration:.25];
-      
-      CGRect frame = self.foldingView.frame;
-      frame.size.width = 0.1;
-      self.foldingView.frame = frame;
+    if (shouldRevealWithFoldingAnimationLeft || shouldRevealWithFoldingAnimationRight) {
+      [self animateFoldingViewToShrink];
     }
     if (animations) {
       animations();
@@ -442,8 +421,13 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
   } completion:^(BOOL finished) {
     if (complete) {
       complete();
-      [self.foldingView disableBoundsAnimation];
     }
+    
+    if (shouldRevealWithFoldingAnimationLeft || shouldRevealWithFoldingAnimationRight) {
+      [self.foldingView disableBoundsAnimation];
+      [self.foldingView removeFromSuperview];
+    }
+    
     [self topViewHorizontalCenterDidChange:self.resettedCenter];
   }];
 }
@@ -572,7 +556,7 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
   _underLeftShowing  = YES;
   _underRightShowing = NO;
   
-  if (shouldRevealWithFoldingAnimation) {
+  if (shouldRevealWithFoldingAnimationLeft) {
     if (self.foldingView) {
       [self.foldingView removeFromSuperview];
       self.foldingView = nil;
@@ -685,6 +669,43 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
   } else {
     [NSException raise:@"Invalid Width Layout" format:@"underRightWidthLayout must be a valid ECViewWidthLayout"];
   }
+}
+
+#pragma mark - For handling folding views
+
+- (void)initializeFoldingViewForSide:(ECSide)side {
+    if (self.foldingView) {
+        [self.foldingView removeFromSuperview];
+        self.foldingView = nil;
+    }
+    self.foldingView = [[MMFoldingView alloc] initWithView:self.underLeftView];
+
+    // if it's the left view, the anchor is automatically at the left side
+    self.foldingView.frame = self.underLeftView.frame;
+    [self.underLeftView addSubview:self.foldingView];
+}
+
+- (void)stepFoldingView {
+  float currentWidth = self.topView.frame.origin.x;
+  CGRect frame = self.foldingView.frame;
+  frame.size.width = currentWidth;
+  self.foldingView.frame = frame;
+}
+
+- (void)animateFoldingViewToFullSize {
+  [self.foldingView enableBoundsAnimationWithDuration:.25f];
+  
+  CGRect frame = self.foldingView.layer.frame;
+  frame.size.width = self.view.frame.size.width;
+  self.foldingView.layer.frame = frame;
+}
+
+- (void)animateFoldingViewToShrink {
+  [self.foldingView enableBoundsAnimationWithDuration:.25];
+  
+  CGRect frame = self.foldingView.frame;
+  frame.size.width = 0.1;
+  self.foldingView.frame = frame;
 }
 
 @end
