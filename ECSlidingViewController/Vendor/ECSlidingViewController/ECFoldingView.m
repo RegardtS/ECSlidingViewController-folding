@@ -57,74 +57,74 @@
     return fullWidth/2;
 }
 
-- (id)initWithView:(UIView *)view {
-    if (self = [super init]) {
-        // take a snapshot of the underleft view controller, copy it into two image views,
-        // one for the left half and one for the right
-        UIImage *underLeftImage = [UIImage imageWithUIView:view];
-        
-        // setup the left & right half layers
-        self.leftHalfLayer = [CALayer layer];
-        self.rightHalfLayer = [CALayer layer];
-        [self.leftHalfLayer setContents:(id)[underLeftImage CGImage]];
-        [self.rightHalfLayer setContents:(id)[underLeftImage CGImage]];
-        
-        // create a UIView to hold both halves
-        self.frame = view.frame;
-        self.backgroundColor = [UIColor blackColor];
-        
-        // save the width
-        self.fullWidth = view.frame.size.width;
-        
-        // add perspective to all sublayers
-        CATransform3D sublayerTransform = CATransform3DIdentity;
-        sublayerTransform.m34 = -1./500;
-        self.layer.sublayerTransform = sublayerTransform;
-        
-        // we add one layer for the left half and one for the right
-        self.leftHalfLayer.anchorPoint = CGPointMake(0, .5);
-        [self.layer addSublayer:self.leftHalfLayer];
-        
-        self.rightHalfLayer.anchorPoint = CGPointMake(1, .5);
-        [self.layer addSublayer:self.rightHalfLayer];
-        
-        // size and position the image layers
-        CGRect halfFrame = view.frame;
-        halfFrame.size.width = self.halfWidth;
-        self.leftHalfLayer.frame = halfFrame;
-        self.rightHalfLayer.frame = halfFrame;
-        self.leftHalfLayer.masksToBounds = YES;
-        self.rightHalfLayer.masksToBounds = YES;
-        self.leftHalfLayer.contentsGravity = kCAGravityLeft;
-        self.rightHalfLayer.contentsGravity = kCAGravityRight;
-        self.leftHalfLayer.contentsScale = [[UIScreen mainScreen] scale];
-        self.rightHalfLayer.contentsScale = [[UIScreen mainScreen] scale];
+- (id)initWithView:(UIView *)view frame:(CGRect)newFrame {
+  if (self = [super init]) {
+    // take a snapshot of the underleft view controller, copy it into two image views,
+    // one for the left half and one for the right
+    UIImage *underLeftImage = [UIImage imageWithUIView:view];
+    
+    // setup the left & right half layers
+    self.leftHalfLayer = [CALayer layer];
+    self.rightHalfLayer = [CALayer layer];
+    [self.leftHalfLayer setContents:(id)[underLeftImage CGImage]];
+    [self.rightHalfLayer setContents:(id)[underLeftImage CGImage]];
+    
+    // create a UIView to hold both halves
+    self.frame = newFrame;
+    self.backgroundColor = [UIColor blackColor];
+    
+    // save the width
+    self.fullWidth = newFrame.size.width;
+    
+    // add perspective to all sublayers
+    CATransform3D sublayerTransform = CATransform3DIdentity;
+    sublayerTransform.m34 = -1./500;
+    self.layer.sublayerTransform = sublayerTransform;
+    
+    // we add one layer for the left half and one for the right
+    self.leftHalfLayer.anchorPoint = CGPointMake(0, .5);
+    [self.layer addSublayer:self.leftHalfLayer];
+    
+    self.rightHalfLayer.anchorPoint = CGPointMake(1, .5);
+    [self.layer addSublayer:self.rightHalfLayer];
+    
+    // size and position the image layers
+    CGRect halfFrame = newFrame;
+    halfFrame.size.width = self.halfWidth;
+    self.leftHalfLayer.frame = halfFrame;
+    self.rightHalfLayer.frame = halfFrame;
+    self.leftHalfLayer.masksToBounds = YES;
+    self.rightHalfLayer.masksToBounds = YES;
+    self.leftHalfLayer.contentsGravity = kCAGravityLeft;
+    self.rightHalfLayer.contentsGravity = kCAGravityRight;
+    self.leftHalfLayer.contentsScale = [[UIScreen mainScreen] scale];
+    self.rightHalfLayer.contentsScale = [[UIScreen mainScreen] scale];
 
-        // setup the delegates and a delegate redirector
-        self.sublayerDelegate = [[MMSublayerDelegate alloc] init];
-        self.sublayerDelegate.foldingView = self;
-        self.leftHalfLayer.delegate = sublayerDelegate;
-        self.rightHalfLayer.delegate = sublayerDelegate;
-        
-        // TODO: add insets for beauty (anti-aliased edges)
-        
-        // add overlays whose opacity we will adjust depending on the angle
-        //CGRect viewFrame = CGRectMake(0, 0, self.leftHalfLayer.frame.size.width, self.leftHalfLayer.frame.size.height);
-        
-      // add shadow overlays
-      self.leftHalfShadowLayer = [CALayer layer];
-      self.leftHalfShadowLayer.backgroundColor = [[UIColor blackColor] CGColor];
-      self.leftHalfShadowLayer.frame = self.leftHalfLayer.frame;
-      self.leftHalfShadowLayer.delegate = sublayerDelegate;
-      [self.leftHalfLayer addSublayer:leftHalfShadowLayer];
+    // setup the delegates and a delegate redirector
+    self.sublayerDelegate = [[MMSublayerDelegate alloc] init];
+    self.sublayerDelegate.foldingView = self;
+    self.leftHalfLayer.delegate = sublayerDelegate;
+    self.rightHalfLayer.delegate = sublayerDelegate;
+    
+    // TODO: add insets for beauty (anti-aliased edges)
+    
+    // add overlays whose opacity we will adjust depending on the angle
+    //CGRect viewFrame = CGRectMake(0, 0, self.leftHalfLayer.frame.size.width, self.leftHalfLayer.frame.size.height);
       
-      self.rightHalfShadowLayer = [CALayer layer];
-      self.rightHalfShadowLayer.backgroundColor = [[UIColor blackColor] CGColor];
-      self.rightHalfShadowLayer.frame = self.rightHalfLayer.frame;
-      self.rightHalfShadowLayer.delegate = sublayerDelegate;
-      [self.rightHalfLayer addSublayer:rightHalfShadowLayer];
-    }
-    return self;
+    // add shadow overlays
+    self.leftHalfShadowLayer = [CALayer layer];
+    self.leftHalfShadowLayer.backgroundColor = [[UIColor blackColor] CGColor];
+    self.leftHalfShadowLayer.frame = self.leftHalfLayer.frame;
+    self.leftHalfShadowLayer.delegate = sublayerDelegate;
+    [self.leftHalfLayer addSublayer:leftHalfShadowLayer];
+    
+    self.rightHalfShadowLayer = [CALayer layer];
+    self.rightHalfShadowLayer.backgroundColor = [[UIColor blackColor] CGColor];
+    self.rightHalfShadowLayer.frame = self.rightHalfLayer.frame;
+    self.rightHalfShadowLayer.delegate = sublayerDelegate;
+    [self.rightHalfLayer addSublayer:rightHalfShadowLayer];
+  }
+  return self;
 }
 
 
@@ -174,8 +174,6 @@
 }
 
 - (id<CAAction>)actionForLayer:(CALayer *)layer forKey:(NSString *)event {
-    NSLog(@"event is %@", event);
-    
     if (isAnimating) {
         CABasicAnimation *animation = [CABasicAnimation animation];
         animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];

@@ -11,7 +11,7 @@
 @interface ECFoldingView : UIView
 
 // takes a "screenshot" of the view, then splits it in half so it can fold it
-- (id)initWithView:(UIView *)view;
+- (id)initWithView:(UIView *)view frame:(CGRect)newFrame;
 
 - (void)enableBoundsAnimationWithDuration:(float)time;
 - (void)disableBoundsAnimation;
