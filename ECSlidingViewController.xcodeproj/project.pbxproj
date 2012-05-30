@@ -26,6 +26,7 @@
 		2750E7AF14CF1306007727A0 /* UIImage+ImageWithUIView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2750E7AD14CF1306007727A0 /* UIImage+ImageWithUIView.m */; };
 		27FC94E014D0C14E0000B18C /* InitialSlidingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 27FC94DF14D0C14E0000B18C /* InitialSlidingViewController.m */; };
 		27FC94E314D105C60000B18C /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27FC94E214D105C60000B18C /* QuartzCore.framework */; };
+		E40E5E8B15632D2000E3D4A3 /* ECFoldingView.m in Sources */ = {isa = PBXBuildFile; fileRef = E40E5E8A15632D2000E3D4A3 /* ECFoldingView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -62,6 +63,8 @@
 		27FC94DE14D0C14E0000B18C /* InitialSlidingViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InitialSlidingViewController.h; sourceTree = "<group>"; };
 		27FC94DF14D0C14E0000B18C /* InitialSlidingViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InitialSlidingViewController.m; sourceTree = "<group>"; };
 		27FC94E214D105C60000B18C /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		E40E5E8915632D2000E3D4A3 /* ECFoldingView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ECFoldingView.h; sourceTree = "<group>"; };
+		E40E5E8A15632D2000E3D4A3 /* ECFoldingView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ECFoldingView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -170,6 +173,8 @@
 				2750E7AB14CF1306007727A0 /* ECSlidingViewController.m */,
 				279E158D14D737F60028A9EE /* UIImage+ImageWithUIView.h */,
 				2750E7AD14CF1306007727A0 /* UIImage+ImageWithUIView.m */,
+				E40E5E8915632D2000E3D4A3 /* ECFoldingView.h */,
+				E40E5E8A15632D2000E3D4A3 /* ECFoldingView.m */,
 			);
 			name = ECSlidingViewController;
 			path = Vendor/ECSlidingViewController;
@@ -250,6 +255,7 @@
 				27FC94E014D0C14E0000B18C /* InitialSlidingViewController.m in Sources */,
 				27498DCE14E96C75005C043E /* NavigationTopViewController.m in Sources */,
 				27498DD514E96EEF005C043E /* SampleTableViewController.m in Sources */,
+				E40E5E8B15632D2000E3D4A3 /* ECFoldingView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -7,7 +7,7 @@
 //
 
 #import "ECSlidingViewController.h"
-#import "MMFoldingView.h"
+#import "ECFoldingView.h"
 
 NSString *const ECSlidingViewUnderRightWillAppear = @"ECSlidingViewUnderRightWillAppear";
 NSString *const ECSlidingViewUnderLeftWillAppear  = @"ECSlidingViewUnderLeftWillAppear";
@@ -27,7 +27,7 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
 @property (nonatomic, unsafe_unretained) BOOL topViewIsOffScreen;
 @property (nonatomic, strong) UIImageView *leftHalfImageView;
 @property (nonatomic, strong) UIImageView *rightHalfImageView;
-@property (nonatomic, strong) MMFoldingView *foldingView;
+@property (nonatomic, strong) ECFoldingView *foldingView;
 
 
 - (NSUInteger)autoResizeToFillScreen;
@@ -561,7 +561,7 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
       [self.foldingView removeFromSuperview];
       self.foldingView = nil;
     }
-    self.foldingView = [[MMFoldingView alloc] initWithView:self.underLeftView];
+    self.foldingView = [[ECFoldingView alloc] initWithView:self.underLeftView];
     // anchor to the left side of the screen
     //self.foldingView.layer.anchorPoint = CGPointMake(.5, .5);
     self.foldingView.frame = self.underLeftView.frame;
@@ -678,7 +678,7 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
         [self.foldingView removeFromSuperview];
         self.foldingView = nil;
     }
-    self.foldingView = [[MMFoldingView alloc] initWithView:self.underLeftView];
+    self.foldingView = [[ECFoldingView alloc] initWithView:self.underLeftView];
 
     // if it's the left view, the anchor is automatically at the left side
     self.foldingView.frame = self.underLeftView.frame;

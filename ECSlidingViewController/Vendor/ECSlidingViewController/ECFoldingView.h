@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface MMFoldingView : UIView
+@interface ECFoldingView : UIView
 
 // takes a "screenshot" of the view, then splits it in half so it can fold it
 - (id)initWithView:(UIView *)view;

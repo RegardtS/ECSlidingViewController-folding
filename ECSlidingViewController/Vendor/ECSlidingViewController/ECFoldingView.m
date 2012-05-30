@@ -6,7 +6,7 @@
 //  Copyright (c) 2012
 //
 
-#import "MMFoldingView.h"
+#import "ECFoldingView.h"
 #import "UIImage+ImageWithUIView.h"
 
 #define OVERLAY_TAG 42
@@ -14,7 +14,7 @@
 // redirects delegate calls for the left half / right half layers,
 // since a UIView's delegate methods are reserved for its layer
 @interface MMSublayerDelegate : NSObject
-@property (nonatomic, weak) MMFoldingView *foldingView;
+@property (nonatomic, weak) ECFoldingView *foldingView;
 @end
 
 @implementation MMSublayerDelegate
@@ -26,7 +26,7 @@
 
 
 // controls the folding view
-@interface MMFoldingView ()
+@interface ECFoldingView ()
 
 @property (nonatomic, retain) CALayer *leftHalfLayer;
 @property (nonatomic, retain) CALayer *rightHalfLayer;
@@ -42,7 +42,7 @@
 
 @end
 
-@implementation MMFoldingView
+@implementation ECFoldingView
 
 @synthesize leftHalfLayer;
 @synthesize rightHalfLayer;
