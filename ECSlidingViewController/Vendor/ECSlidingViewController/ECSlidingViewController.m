@@ -682,8 +682,11 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
   }
   else {
     self.foldingView = [[ECFoldingView alloc] initWithView:self.underRightView frame:self.topView.frame];
-    self.foldingView.frame = self.underRightView.frame;
-    [self.underRightView addSubview:self.foldingView];
+    CGRect newFrame = self.topView.frame;
+    newFrame.origin.x = 320.;
+    self.foldingView.frame = newFrame;
+    
+    [self.topView insertSubview:self.foldingView atIndex:0];
   }    
 }
 
@@ -700,7 +703,7 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
     float currentWidth = -self.topView.frame.origin.x;
     CGRect frame = self.foldingView.frame;
     frame.size.width = currentWidth;
-    frame.origin.x = self.underRightView.frame.size.width - currentWidth;
+    //frame.origin.x = self.underRightView.frame.size.width - currentWidth;
     self.foldingView.frame = frame;
     NSLog(@"currentWidth is %f", currentWidth);
   }
@@ -720,9 +723,6 @@ NSString *const ECSlidingViewTopDidReset          = @"ECSlidingViewTopDidReset";
   
   CGRect frame = self.foldingView.frame;
   frame.size.width = 0.1;
-  if (self.underRightShowing) {
-    frame.origin.x = self.topView.frame.size.width;
-  }
   self.foldingView.frame = frame;
   
 
